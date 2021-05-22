@@ -653,7 +653,7 @@ describe.only("Liquity", () => {
       ).to.eq(expectedTroveDebt);
     });
 
-    it("adjusts a Trove: deposits and borrows", async () => {
+    it("adjusts a Trove: deposit ETH and borrow LUSD", async () => {
       await createTrove(dsa, userWallet);
 
       const originalTroveCollateral = await troveManager.getTroveColl(
