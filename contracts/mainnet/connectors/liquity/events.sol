@@ -27,9 +27,10 @@ contract Events {
         uint setBorrowId
     );
 
+    // Claim collateral (from redemption)
     // Liquidate? 
     // Redeem?
 
-    // Stability pool?
+    // Stability pool? (inc. Move Eth gain to Trove)
     // Staking?
 }
