@@ -161,33 +161,6 @@ abstract contract LiquityResolver is Events, Helpers {
         _eventParam = abi.encode(msg.sender, maxFeePercentage, depositAmount, borrowAmount, getDepositId, setWithdrawId, getRepayId, setBorrowId);
     }
 
-    // function depositAndBorrow(
-    //     uint depositAmount,
-    //     uint maxFeePercentage,
-    //     uint borrowAmount,
-    //     address upperHint,
-    //     address lowerHint,
-    //     uint getId,
-    //     uint setId
-    // ) external payable returns (string memory _eventName, bytes memory _eventParam) {
-    //     depositAmount = getUint(getId, depositAmount);
-
-    //     borrowerOperations.adjustTrove{value: depositAmount}(
-    //         maxFeePercentage,
-    //         0, // collateralWithdrawal=0
-    //         borrowAmount,
-    //         true, // isDebtIncrease=true
-    //         upperHint,
-    //         lowerHint
-    //     );
-
-    //     // Allow other spells to use the borrowed amount
-    //     setUint(setId, borrowAmount);
-    //     _eventName = "LogDepositAndBorrow(address,uint,uint,uint,uint,uint)";
-    //     _eventParam = abi.encode(msg.sender, maxFeePercentage, depositAmount, borrowAmount, getId, setId);
-    // }
-
-
 }
 
 contract ConnectV2Liquity is LiquityResolver {

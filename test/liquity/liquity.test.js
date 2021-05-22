@@ -33,7 +33,8 @@ const {
   LUSD_GAS_COMPENSATION,
 } = require("./liquity.helpers");
 
-const { eth_addr: ETH_ADDRESS } = require("../../scripts/constant/constant"); // Instadapp uses this fake address to represent native ETH
+// Instadapp uses a fake address to represent native ETH
+const { eth_addr: ETH_ADDRESS } = require("../../scripts/constant/constant");
 
 describe.only("Liquity", () => {
   const { waffle, ethers } = hre;
