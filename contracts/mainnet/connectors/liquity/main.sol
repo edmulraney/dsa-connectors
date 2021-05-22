@@ -39,7 +39,7 @@ abstract contract LiquityResolver is Events, Helpers {
         uint getId,
         uint setId
     ) external payable returns (string memory _eventName, bytes memory _eventParam) {
-        // User's can either send ETH directly or have it collected from a previous spell
+        // User can either send ETH directly or have it collected from a previous spell
         depositAmount = getUint(getId, depositAmount);
 
         borrowerOperations.openTrove{value: depositAmount}(
