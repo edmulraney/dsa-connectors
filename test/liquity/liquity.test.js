@@ -35,7 +35,7 @@ const {
 
 const { eth_addr: ETH_ADDRESS } = require("../../scripts/constant/constant"); // Instadapp uses this fake address to represent native ETH
 
-describe("Liquity", () => {
+describe.only("Liquity", () => {
   const { waffle, ethers } = hre;
   const { provider } = waffle;
   const userWallet = provider.getWallets()[0]; // Hardhat test account 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266 (holds 1000 ETH)
@@ -118,7 +118,7 @@ describe("Liquity", () => {
 
       const openTroveSpell = {
         connector: CONNECTOR_NAME,
-        method: "depositAndBorrow",
+        method: "open",
         args: [
           depositAmount,
           maxFeePercentage,
@@ -184,7 +184,7 @@ describe("Liquity", () => {
 
       const openTroveSpell = {
         connector: CONNECTOR_NAME,
-        method: "depositAndBorrow",
+        method: "open",
         args: [
           0, // When pulling ETH from a previous spell it doesn't matter what deposit value we put in this param
           maxFeePercentage,
@@ -255,7 +255,7 @@ describe("Liquity", () => {
       const closeTroveSpell = {
         connector: CONNECTOR_NAME,
         method: "close",
-        args: [],
+        args: [0],
       };
 
       const closeTx = await dsa
@@ -331,7 +331,7 @@ describe("Liquity", () => {
       const closeTroveSpell = {
         connector: CONNECTOR_NAME,
         method: "close",
-        args: [],
+        args: [0],
       };
 
       const closeTx = await dsa
@@ -362,7 +362,77 @@ describe("Liquity", () => {
     });
   });
 
-  it.only("deposits ETH into a Trove", async () => {
+  it("closes a Trove and stores the released collateral for other spells to use", async () => {
+    const depositAmount = ethers.utils.parseEther("5"); // 5 ETH
+    const borrowAmount = ethers.utils.parseUnits("2000", 18); // 2000 LUSD
+    await openTroveSpell(dsa, userWallet, depositAmount, borrowAmount);
+    const originalTroveDebt = await troveManager.getTroveDebt(dsa.address);
+    const originalTroveCollateral = await troveManager.getTroveColl(
+      dsa.address
+    );
+
+    // Send DSA account enough LUSD (from Stability Pool) to close their Trove
+    const extraLusdRequiredToCloseTrove = originalTroveDebt.sub(borrowAmount);
+    await sendLusdFromStabilityPool(
+      lusdToken,
+      extraLusdRequiredToCloseTrove,
+      dsa.address
+    );
+    const originalDsaLusdBalance = await lusdToken.balanceOf(dsa.address);
+    expect(
+      originalDsaLusdBalance,
+      "DSA account should now hold the LUSD amount required to pay off the Trove debt"
+    ).to.eq(originalTroveDebt);
+
+    const collateralWithdrawId = 1;
+
+    const closeTroveSpell = {
+      connector: CONNECTOR_NAME,
+      method: "close",
+      args: [collateralWithdrawId],
+    };
+
+    const withdrawEthSpell = {
+      connector: "Basic-v1",
+      method: "withdraw",
+      args: [
+        ETH_ADDRESS,
+        0, // amount comes from the previous spell's setId
+        dsa.address,
+        collateralWithdrawId,
+        0,
+      ],
+    };
+
+    const closeTx = await dsa
+      .connect(userWallet)
+      .cast(
+        ...encodeSpells([closeTroveSpell, withdrawEthSpell]),
+        userWallet.address
+      );
+    await closeTx.wait();
+
+    const dsaEthBalance = await ethers.provider.getBalance(dsa.address);
+    const dsaLusdBalance = await lusdToken.balanceOf(dsa.address);
+    const troveDebt = await troveManager.getTroveDebt(dsa.address);
+    const troveCollateral = await troveManager.getTroveColl(dsa.address);
+
+    expect(troveDebt, "Trove debt should equal 0 after close").to.eq(0);
+    expect(
+      troveCollateral,
+      "Trove collateral should equal 0 after close"
+    ).to.eq(0);
+    expect(
+      dsaEthBalance,
+      "DSA account should now hold the Trove's ETH collateral"
+    ).to.eq(originalTroveCollateral);
+    expect(
+      dsaLusdBalance,
+      "DSA account should now hold the gas compensation amount of LUSD as it paid off the Trove debt"
+    ).to.eq(LUSD_GAS_COMPENSATION);
+  });
+
+  it("deposits ETH into a Trove", async () => {
     const depositAmount = ethers.utils.parseEther("5"); // 5 ETH
     const borrowAmount = ethers.utils.parseUnits("2000", 18); // 2000 LUSD
     await openTroveSpell(dsa, userWallet, depositAmount, borrowAmount);

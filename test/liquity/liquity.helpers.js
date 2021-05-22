@@ -12,7 +12,7 @@ const openTroveSpell = async (dsa, userWallet, depositAmount, borrowAmount) => {
 
   const openTroveSpell = {
     connector: CONNECTOR_NAME,
-    method: "depositAndBorrow",
+    method: "open",
     args: [
       depositAmount,
       maxFeePercentage,
