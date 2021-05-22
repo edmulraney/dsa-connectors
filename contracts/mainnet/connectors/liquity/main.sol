@@ -17,7 +17,7 @@ abstract contract LiquityResolver is Events, Helpers {
     TroveManagerLike internal constant troveManager =
         TroveManagerLike(0xA39739EF8b0231DbFA0DcdA07d7e29faAbCf4bb2);
 
-    struct AdjustTroveVariables {
+    struct AdjustTrove {
         uint maxFeePercentage;
         uint withdrawAmount;
         uint depositAmount;
@@ -142,7 +142,7 @@ abstract contract LiquityResolver is Events, Helpers {
         uint getRepayId,
         uint setBorrowId
     ) external payable returns (string memory _eventName, bytes memory _eventParam) {
-        AdjustTroveVariables memory adjustTrove;
+        AdjustTrove memory adjustTrove;
 
         adjustTrove.maxFeePercentage = maxFeePercentage;
         adjustTrove.withdrawAmount = withdrawAmount;
