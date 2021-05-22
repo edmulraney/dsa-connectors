@@ -41,13 +41,6 @@ abstract contract LiquityResolver is Events, Helpers {
     ) external payable returns (string memory _eventName, bytes memory _eventParam) {
         // User's can either send ETH directly or have it collected from a previous spell
         depositAmount = getUint(getId, depositAmount);
-        console.log("Connector :: depositAmount", depositAmount, getId);
-        console.log("Connector :: msg.value", msg.value);
-        console.log("Connector :: depositAmount, borrowAmount", depositAmount, borrowAmount);
-        console.log("Connector :: sender, address(this)", msg.sender, address(this));
-
-        uint trovesBefore = troveManager.getTroveOwnersCount();
-        console.log("Connector :: this Trove debt", troveManager.getTroveDebt(address(this)));
 
         borrowerOperations.openTrove{value: depositAmount}(
             maxFeePercentage,
@@ -55,8 +48,6 @@ abstract contract LiquityResolver is Events, Helpers {
             upperHint,
             lowerHint
         );
-        console.log("Connector :: trovesBefore, trovesAfter", trovesBefore, troveManager.getTroveOwnersCount());
-        console.log("Connector :: this Trove debt", troveManager.getTroveDebt(address(this)));
 
         // Allow other spells to use the borrowed amount
         setUint(setId, borrowAmount);
@@ -102,8 +93,8 @@ abstract contract LiquityResolver is Events, Helpers {
     }
 
     function borrow(
-        uint amount,
         uint maxFeePercentage,
+        uint amount,
         address upperHint,
         address lowerHint,
         uint getId,
@@ -125,7 +116,7 @@ abstract contract LiquityResolver is Events, Helpers {
     ) external payable returns (string memory _eventName, bytes memory _eventParam)  {
         amount = getUint(getId, amount);
         borrowerOperations.repayLUSD(amount, upperHint, lowerHint);
-        _eventName = "LogDeposit(address,uint,uint,uint)";
+        _eventName = "LogRepay(address,uint,uint,uint)";
         _eventParam = abi.encode(msg.sender, amount, getId, setId);
     }
 

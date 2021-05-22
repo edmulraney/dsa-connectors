@@ -6,7 +6,7 @@ module.exports = function(spells) {
   const targets = spells.map((a) => a.connector);
   const calldatas = spells.map((a) => {
     const functionName = a.method;
-    console.log(functionName, a.connector);
+    // console.log(functionName, a.connector);
     const abi = abis.connectors[a.connector].find((b) => {
       return b.name === functionName;
     });

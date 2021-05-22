@@ -32,6 +32,15 @@ const openTroveSpell = async (dsa, userWallet, depositAmount, borrowAmount) => {
   return await openTx.wait();
 };
 
+const createTrove = async (
+  dsa,
+  userWallet,
+  depositAmount = hre.ethers.utils.parseEther("5"),
+  borrowAmount = hre.ethers.utils.parseUnits("2500", 18)
+) => {
+  return await openTroveSpell(dsa, userWallet, depositAmount, borrowAmount);
+};
+
 const sendLusdFromStabilityPool = async (lusdToken, amount, to) => {
   await hre.network.provider.request({
     method: "hardhat_impersonateAccount",
@@ -43,6 +52,7 @@ const sendLusdFromStabilityPool = async (lusdToken, amount, to) => {
 };
 
 module.exports = {
+  createTrove,
   openTroveSpell,
   sendLusdFromStabilityPool,
   CONNECTOR_NAME,
