@@ -10,12 +10,6 @@ interface BorrowerOperationsLike {
 
     function addColl(address _upperHint, address _lowerHint) external payable;
 
-    function moveETHGainToTrove(
-        address _user,
-        address _upperHint,
-        address _lowerHint
-    ) external payable;
-
     function withdrawColl(
         uint256 _amount,
         address _upperHint,
@@ -47,22 +41,20 @@ interface BorrowerOperationsLike {
     ) external payable;
 
     function claimCollateral() external;
-
-    function getCompositeDebt(uint256 _debt) external pure returns (uint256);
 }
 
 interface TroveManagerLike {
     function getTroveColl(address _borrower) external view returns (uint);
     function getTroveDebt(address _borrower) external view returns (uint);
-    function getTroveOwnersCount() external view returns (uint);
-    
-    function redeemCollateral(
-        uint256 _LUSDAmount,
-        address _firstRedemptionHint,
-        address _upperPartialRedemptionHint,
-        address _lowerPartialRedemptionHint,
-        uint256 _partialRedemptionHintNICR,
-        uint256 _maxIterations,
-        uint256 _maxFee
-    ) external;
+}
+
+interface StabilityPoolLike {
+    function provideToSP(uint _amount, address _frontEndTag) external;
+    function withdrawFromSP(uint _amount) external;
+    function withdrawETHGainToTrove(address _upperHint, address _lowerHint) external;
+}
+
+interface StakingLike {
+    function stake(uint _LQTYamount) external;
+    function unstake(uint _LQTYamount) external;
 }

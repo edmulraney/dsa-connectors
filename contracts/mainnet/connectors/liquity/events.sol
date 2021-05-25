@@ -1,6 +1,8 @@
 pragma solidity ^0.7.0;
 
 contract Events {
+
+    /* Trove */
     event Open(
         address indexed borrower,
         uint maxFeePercentage,
@@ -26,11 +28,15 @@ contract Events {
         uint getRepayId,
         uint setBorrowId
     );
+    event LogClaimCollateralFromRedemption(address indexed borrower);
 
-    // Claim collateral (from redemption)
-    // Liquidate? 
-    // Redeem?
+    /* Stability Pool */
+    event LogStabilityDeposit(address indexed borrower, uint amount, address frontendTag, uint getId);
+    event LogStabilityWithdraw(address indexed borrower, uint amount, uint setId);
+    event LogStabilityWithdrawEthGainToTrove(address indexed borrower);
 
-    // Stability pool? (inc. Move Eth gain to Trove)
-    // Staking?
+    /* Staking */
+    event LogStake(address indexed borrower, uint amount, uint getId);
+    event LogUnstake(address indexed borrower, uint amount, uint setId);
+    event LogClaimGains(address indexed borrower);
 }

@@ -2,6 +2,9 @@ const TROVE_MANAGER_ADDRESS = "0xA39739EF8b0231DbFA0DcdA07d7e29faAbCf4bb2";
 const TROVE_MANAGER_ABI = [
   "function getTroveColl(address _borrower) external view returns (uint)",
   "function getTroveDebt(address _borrower) external view returns (uint)",
+  "function getTroveStatus(address _borrower) external view returns (uint)",
+  "function redeemCollateral(uint _LUSDAmount, address _firstRedemptionHint, address _upperPartialRedemptionHint, address _lowerPartialRedemptionHint, uint _partialRedemptionHintNICR, uint _maxIterations, uint _maxFee) external returns (uint)",
+  "function getNominalICR(address _borrower) external view returns (uint)",
 ];
 
 const BORROWER_OPERATIONS_ADDRESS =
@@ -17,6 +20,24 @@ const LUSD_TOKEN_ABI = [
   "function approve(address spender, uint256 amount) external returns (bool)",
 ];
 
+const ACTIVE_POOL_ADDRESS = "0xDf9Eb223bAFBE5c5271415C75aeCD68C21fE3D7F";
+const ACTIVE_POOL_ABI = ["function getLUSDDebt() external view returns (uint)"];
+
+const PRICE_FEED_ADDRESS = "0x4c517D4e2C851CA76d7eC94B805269Df0f2201De";
+const PRICE_FEED_ABI = ["function fetchPrice() external returns (uint)"];
+
+const HINT_HELPERS_ADDRESS = "0xE84251b93D9524E0d2e621Ba7dc7cb3579F997C0";
+const HINT_HELPERS_ABI = [
+  "function getRedemptionHints(uint _LUSDamount, uint _price, uint _maxIterations) external view returns (address firstRedemptionHint, uint partialRedemptionHintNICR, uint truncatedLUSDamount)",
+  "function getApproxHint(uint _CR, uint _numTrials, uint _inputRandomSeed) view returns (address hintAddress, uint diff, uint latestRandomSeed)",
+  "function computeNominalCR(uint _coll, uint _debt) external pure returns (uint)",
+];
+
+const SORTED_TROVES_ADDRESS = "0x8FdD3fbFEb32b28fb73555518f8b361bCeA741A6";
+const SORTED_TROVES_ABI = [
+  "function findInsertPosition(uint256 _ICR, address _prevId, address _nextId) external view returns (address, address)",
+  "function getLast() external view returns (address)",
+];
 const STABILITY_POOL_ADDRESS = "0x66017D22b0f8556afDd19FC67041899Eb65a21bb";
 
 module.exports = {
@@ -27,4 +48,12 @@ module.exports = {
   LUSD_TOKEN_ADDRESS,
   LUSD_TOKEN_ABI,
   STABILITY_POOL_ADDRESS,
+  ACTIVE_POOL_ADDRESS,
+  ACTIVE_POOL_ABI,
+  PRICE_FEED_ADDRESS,
+  PRICE_FEED_ABI,
+  HINT_HELPERS_ADDRESS,
+  HINT_HELPERS_ABI,
+  SORTED_TROVES_ADDRESS,
+  SORTED_TROVES_ABI,
 };

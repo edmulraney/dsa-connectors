@@ -6,7 +6,7 @@ pragma solidity ^0.7.0;
  */
 import "hardhat/console.sol";
 
-import { BorrowerOperationsLike, TroveManagerLike } from "./interface.sol";
+import { BorrowerOperationsLike, TroveManagerLike, StabilityPoolLike, StakingLike } from "./interface.sol";
 import { Stores } from "../../common/stores.sol";
 import { Helpers } from "./helpers.sol";
 import { Events } from "./events.sol";
@@ -16,6 +16,10 @@ abstract contract LiquityResolver is Events, Helpers {
         BorrowerOperationsLike(0x24179CD81c9e782A4096035f7eC97fB8B783e007);
     TroveManagerLike internal constant troveManager =
         TroveManagerLike(0xA39739EF8b0231DbFA0DcdA07d7e29faAbCf4bb2);
+    StabilityPoolLike internal constant stabilityPool =
+        StabilityPoolLike(0x66017D22b0f8556afDd19FC67041899Eb65a21bb);
+    StakingLike internal constant staking =
+        StakingLike(0x4f9Fbb3f1E99B56e0Fe2892e623Ed36A76Fc605d);
 
     struct AdjustTrove {
         uint maxFeePercentage;
@@ -29,6 +33,8 @@ abstract contract LiquityResolver is Events, Helpers {
     constructor() {
         console.log("Connector :: deployed at", address(this));
     }
+
+    /* Begin: Trove */
 
     function open(
         uint depositAmount,
@@ -160,6 +166,79 @@ abstract contract LiquityResolver is Events, Helpers {
         _eventName = "LogAdjust(address,uint,uint,uint,uint,uint,uint,uint,uint,uint)";
         _eventParam = abi.encode(msg.sender, maxFeePercentage, depositAmount, borrowAmount, getDepositId, setWithdrawId, getRepayId, setBorrowId);
     }
+
+    function claimCollateralFromRedemption() external returns(string memory _eventName, bytes memory _eventParam) {
+        borrowerOperations.claimCollateral();
+        _eventName = "LogClaimCollateralFromRedemption(address)";
+        _eventParam = abi.encode(msg.sender);
+    }
+    /* End: Trove */
+
+    /* Begin: Stability Pool */
+    function stabilityDeposit(
+        uint amount,
+        address frontendTag,
+        uint getId
+    ) external returns (string memory _eventName, bytes memory _eventParam) {
+        amount = getUint(getId, amount);
+
+        stabilityPool.provideToSP(amount, frontendTag);
+        
+        _eventName = "LogStabilityDeposit(address,uint,address,uint)";
+        _eventParam = abi.encode(msg.sender, amount, frontendTag, getId);
+    
+    }
+
+    function stabilityWithdraw(
+        uint amount,
+        uint setId
+    ) external returns (string memory _eventName, bytes memory _eventParam) {
+        stabilityPool.withdrawFromSP(amount);
+        setUint(setId, amount);
+
+        _eventName = "LogStabilityWithdraw(address,uint,uint)";
+        _eventParam = abi.encode(msg.sender, amount, setId);
+    }
+
+    function stabilityWithdrawEthGainToTrove(
+        address upperHint,
+        address lowerHint
+    ) external returns (string memory _eventName, bytes memory _eventParam) {
+        stabilityPool.withdrawETHGainToTrove(upperHint, lowerHint);
+
+        _eventName = "LogStabilityWithdrawEthGainToTrove(address)";
+        _eventParam = abi.encode(msg.sender);
+    }
+    /* End: Stability Pool */
+
+    /* Begin: Staking */
+    function stake(
+        uint amount,
+        uint getId
+    ) external returns (string memory _eventName, bytes memory _eventParam) {
+        amount = getUint(getId, amount);
+        staking.stake(amount);
+        _eventName = "LogStake(address,uint)";
+        _eventParam = abi.encode(msg.sender, amount);
+    }
+
+    function unstake(
+        uint amount,
+        uint setId
+    ) external returns (string memory _eventName, bytes memory _eventParam) {
+        staking.unstake(amount);
+        setUint(setId, amount);
+        _eventName = "LogUnstake(address,uint)";
+        _eventParam = abi.encode(msg.sender, amount);
+    }
+
+    function claimGains() external returns (string memory _eventName, bytes memory _eventParam) {
+        // claims are gained when a user's stake is adjusted, so we unstake 0 to trigger the claim
+        staking.unstake(0); 
+        _eventName = "LogClaimGains(address)";
+        _eventParam = abi.encode(msg.sender);
+    }
+    /* End: Staking */
 
 }
 

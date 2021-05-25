@@ -1,6 +1,7 @@
 const hre = require("hardhat");
 const encodeSpells = require("../../scripts/encodeSpells.js");
 const { STABILITY_POOL_ADDRESS } = require("./liquity.abi");
+const hardhatConfig = require("../../hardhat.config");
 
 const CONNECTOR_NAME = "LIQUITY-v1-TEST";
 const LUSD_GAS_COMPENSATION = hre.ethers.utils.parseUnits("200", 18); // 200 LUSD gas compensation repaid after loan repayment
@@ -51,10 +52,46 @@ const sendLusdFromStabilityPool = async (lusdToken, amount, to) => {
   return await lusdToken.connect(signer).transfer(to, amount);
 };
 
+const pinTestToBlockNumber = async (blockNumber) => {
+  return await hre.network.provider.request({
+    method: "hardhat_reset",
+    params: [
+      {
+        forking: {
+          jsonRpcUrl: hardhatConfig.networks.hardhat.forking.url,
+          blockNumber,
+        },
+      },
+    ],
+  });
+};
+
+const getTroveInsertionHints = async (
+  depositAmount,
+  borrowAmount,
+  hintHelpers,
+  sortedTroves
+) => {
+  const nominalCR = hintHelpers.computeNominalCR(depositAmount, borrowAmount);
+  const { hintAddress } = await hintHelpers.getApproxHint(nominalCR, 50, 0);
+  const { 0: upperHint, 1: lowerHint } = await sortedTroves.findInsertPosition(
+    nominalCR,
+    hintAddress,
+    hintAddress
+  );
+
+  return {
+    upperHint,
+    lowerHint,
+  };
+};
+
 module.exports = {
   createTrove,
   openTroveSpell,
   sendLusdFromStabilityPool,
   CONNECTOR_NAME,
   LUSD_GAS_COMPENSATION,
+  pinTestToBlockNumber,
+  getTroveInsertionHints,
 };
