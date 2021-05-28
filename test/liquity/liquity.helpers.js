@@ -1,16 +1,25 @@
 const hre = require("hardhat");
 const encodeSpells = require("../../scripts/encodeSpells.js");
-const { STABILITY_POOL_ADDRESS } = require("./liquity.abi");
 const hardhatConfig = require("../../hardhat.config");
 
 const CONNECTOR_NAME = "LIQUITY-v1-TEST";
 const LUSD_GAS_COMPENSATION = hre.ethers.utils.parseUnits("200", 18); // 200 LUSD gas compensation repaid after loan repayment
+const BLOCK_NUMBER = 12456118; // Deterministic block number for tests to run against, if you change this, test can break.
+const JUSTIN_SUN_ADDRESS = "0x903d12bf2c57a29f32365917c706ce0e1a84cce3"; // LQTY whale address
 
-const openTroveSpell = async (dsa, userWallet, depositAmount, borrowAmount) => {
-  const maxFeePercentage = hre.ethers.utils.parseUnits("0.5", 18); // 0.5% max fee
-  const upperHint = hre.ethers.constants.AddressZero;
-  const lowerHint = hre.ethers.constants.AddressZero;
-
+const openTroveSpell = async (
+  dsa,
+  signer,
+  depositAmount,
+  borrowAmount,
+  upperHint,
+  lowerHint,
+  maxFeePercentage
+) => {
+  let address = signer.address;
+  if (signer.address === undefined) {
+    address = await signer.getAddress();
+  }
   const openTroveSpell = {
     connector: CONNECTOR_NAME,
     method: "open",
@@ -25,34 +34,45 @@ const openTroveSpell = async (dsa, userWallet, depositAmount, borrowAmount) => {
     ],
   };
   const openTx = await dsa
-    .connect(userWallet)
-    .cast(...encodeSpells([openTroveSpell]), userWallet.address, {
+    .connect(signer)
+    .cast(...encodeSpells([openTroveSpell]), address, {
       value: depositAmount,
     });
 
   return await openTx.wait();
 };
 
-const createTrove = async (
+const createDsaTrove = async (
   dsa,
-  userWallet,
+  signer,
   depositAmount = hre.ethers.utils.parseEther("5"),
-  borrowAmount = hre.ethers.utils.parseUnits("2500", 18)
+  borrowAmount = hre.ethers.utils.parseUnits("2500", 18),
+  upperHint = hre.ethers.constants.AddressZero,
+  lowerHint = hre.ethers.constants.AddressZero,
+  maxFeePercentage = hre.ethers.utils.parseUnits("0.5", 18) // 0.5% max fee
 ) => {
-  return await openTroveSpell(dsa, userWallet, depositAmount, borrowAmount);
+  return await openTroveSpell(
+    dsa,
+    signer,
+    depositAmount,
+    borrowAmount,
+    upperHint,
+    lowerHint,
+    maxFeePercentage
+  );
 };
 
-const sendLusdFromStabilityPool = async (lusdToken, amount, to) => {
+const sendToken = async (token, amount, from, to) => {
   await hre.network.provider.request({
     method: "hardhat_impersonateAccount",
-    params: [STABILITY_POOL_ADDRESS],
+    params: [from],
   });
-  const signer = await hre.ethers.provider.getSigner(STABILITY_POOL_ADDRESS);
+  const signer = await hre.ethers.provider.getSigner(from);
 
-  return await lusdToken.connect(signer).transfer(to, amount);
+  return await token.connect(signer).transfer(to, amount);
 };
 
-const pinTestToBlockNumber = async (blockNumber) => {
+const resetHardhatBlockNumber = async (blockNumber) => {
   return await hre.network.provider.request({
     method: "hardhat_reset",
     params: [
@@ -72,8 +92,17 @@ const getTroveInsertionHints = async (
   hintHelpers,
   sortedTroves
 ) => {
-  const nominalCR = hintHelpers.computeNominalCR(depositAmount, borrowAmount);
-  const { hintAddress } = await hintHelpers.getApproxHint(nominalCR, 50, 0);
+  const nominalCR = await hintHelpers.computeNominalCR(
+    depositAmount,
+    borrowAmount
+  );
+
+  const { hintAddress } = await hintHelpers.getApproxHint(
+    nominalCR,
+    50,
+    1298379
+  );
+
   const { 0: upperHint, 1: lowerHint } = await sortedTroves.findInsertPosition(
     nominalCR,
     hintAddress,
@@ -86,12 +115,47 @@ const getTroveInsertionHints = async (
   };
 };
 
+const getRedemptionHints = async (
+  amount,
+  hintHelpers,
+  sortedTroves,
+  priceFeed
+) => {
+  const ethPrice = await priceFeed.callStatic.fetchPrice();
+  const [
+    firstRedemptionHint,
+    partialRedemptionHintNicr,
+  ] = await hintHelpers.getRedemptionHints(amount, ethPrice, 0);
+
+  const { hintAddress } = await hintHelpers.getApproxHint(
+    partialRedemptionHintNicr,
+    50,
+    452354
+  );
+
+  const { 0: upperHint, 1: lowerHint } = await sortedTroves.findInsertPosition(
+    partialRedemptionHintNicr,
+    hintAddress,
+    hintAddress
+  );
+
+  return {
+    partialRedemptionHintNicr,
+    firstRedemptionHint,
+    upperHint,
+    lowerHint,
+  };
+};
+
 module.exports = {
-  createTrove,
+  createDsaTrove,
   openTroveSpell,
-  sendLusdFromStabilityPool,
+  sendToken,
   CONNECTOR_NAME,
   LUSD_GAS_COMPENSATION,
-  pinTestToBlockNumber,
+  BLOCK_NUMBER,
+  JUSTIN_SUN_ADDRESS,
+  resetHardhatBlockNumber,
   getTroveInsertionHints,
+  getRedemptionHints,
 };

@@ -5,12 +5,14 @@ const TROVE_MANAGER_ABI = [
   "function getTroveStatus(address _borrower) external view returns (uint)",
   "function redeemCollateral(uint _LUSDAmount, address _firstRedemptionHint, address _upperPartialRedemptionHint, address _lowerPartialRedemptionHint, uint _partialRedemptionHintNICR, uint _maxIterations, uint _maxFee) external returns (uint)",
   "function getNominalICR(address _borrower) external view returns (uint)",
+  "function liquidate(address _borrower) external",
 ];
 
 const BORROWER_OPERATIONS_ADDRESS =
   "0x24179CD81c9e782A4096035f7eC97fB8B783e007";
 const BORROWER_OPERATIONS_ABI = [
   "function openTrove(uint256 _maxFee, uint256 _LUSDAmount, address _upperHint, address _lowerHint) external payable",
+  "function closeTrove() external",
 ];
 
 const LUSD_TOKEN_ADDRESS = "0x5f98805A4E8be255a32880FDeC7F6728C6568bA0";
@@ -38,7 +40,24 @@ const SORTED_TROVES_ABI = [
   "function findInsertPosition(uint256 _ICR, address _prevId, address _nextId) external view returns (address, address)",
   "function getLast() external view returns (address)",
 ];
+
 const STABILITY_POOL_ADDRESS = "0x66017D22b0f8556afDd19FC67041899Eb65a21bb";
+const STABILITY_POOL_ABI = [
+  "function getCompoundedLUSDDeposit(address _depositor) external view returns (uint)",
+  "function getDepositorETHGain(address _depositor) external view returns (uint)",
+];
+
+const STAKING_ADDRESS = "0x4f9Fbb3f1E99B56e0Fe2892e623Ed36A76Fc605d";
+const STAKING_ABI = [
+  "function stake(uint _LQTYamount) external",
+  "function unstake(uint _LQTYamount) external",
+];
+
+const LQTY_TOKEN_ADDRESS = "0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D";
+const LQTY_TOKEN_ABI = [
+  "function balanceOf(address account) external view returns (uint256)",
+  "function transfer(address _to, uint256 _value) public returns (bool success)",
+];
 
 module.exports = {
   TROVE_MANAGER_ADDRESS,
@@ -48,6 +67,7 @@ module.exports = {
   LUSD_TOKEN_ADDRESS,
   LUSD_TOKEN_ABI,
   STABILITY_POOL_ADDRESS,
+  STABILITY_POOL_ABI,
   ACTIVE_POOL_ADDRESS,
   ACTIVE_POOL_ABI,
   PRICE_FEED_ADDRESS,
@@ -56,4 +76,8 @@ module.exports = {
   HINT_HELPERS_ABI,
   SORTED_TROVES_ADDRESS,
   SORTED_TROVES_ABI,
+  STAKING_ADDRESS,
+  STAKING_ABI,
+  LQTY_TOKEN_ADDRESS,
+  LQTY_TOKEN_ABI,
 };

@@ -31,7 +31,7 @@ abstract contract LiquityResolver is Events, Helpers {
     }
 
     constructor() {
-        console.log("Connector :: deployed at", address(this));
+        console.log("Liquity Connector contract deployed at", address(this));
     }
 
     /* Begin: Trove */
@@ -186,7 +186,6 @@ abstract contract LiquityResolver is Events, Helpers {
         
         _eventName = "LogStabilityDeposit(address,uint,address,uint)";
         _eventParam = abi.encode(msg.sender, amount, frontendTag, getId);
-    
     }
 
     function stabilityWithdraw(
@@ -200,13 +199,13 @@ abstract contract LiquityResolver is Events, Helpers {
         _eventParam = abi.encode(msg.sender, amount, setId);
     }
 
-    function stabilityWithdrawEthGainToTrove(
+    function stabilityMoveEthGainToTrove(
         address upperHint,
         address lowerHint
     ) external returns (string memory _eventName, bytes memory _eventParam) {
         stabilityPool.withdrawETHGainToTrove(upperHint, lowerHint);
 
-        _eventName = "LogStabilityWithdrawEthGainToTrove(address)";
+        _eventName = "LogStabilityMoveEthGainToTrove(address)";
         _eventParam = abi.encode(msg.sender);
     }
     /* End: Stability Pool */

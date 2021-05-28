@@ -33,7 +33,7 @@ contract Events {
     /* Stability Pool */
     event LogStabilityDeposit(address indexed borrower, uint amount, address frontendTag, uint getId);
     event LogStabilityWithdraw(address indexed borrower, uint amount, uint setId);
-    event LogStabilityWithdrawEthGainToTrove(address indexed borrower);
+    event LogStabilityMoveEthGainToTrove(address indexed borrower);
 
     /* Staking */
     event LogStake(address indexed borrower, uint amount, uint getId);
