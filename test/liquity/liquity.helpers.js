@@ -109,6 +109,7 @@ const resetHardhatBlockNumber = async (blockNumber) => {
 const deployAndConnect = async (contracts, isDebug = false) => {
   // Pin Liquity tests to a particular block number to create deterministic state (Ether price etc.)
   await resetHardhatBlockNumber(BLOCK_NUMBER);
+
   const liquity = {
     troveManager: null,
     borrowerOperations: null,
@@ -248,7 +249,7 @@ const getTroveInsertionHints = async (
     50,
     1298379,
     {
-      gasLimit: MAX_GAS, // permit max gas
+      gasLimit: MAX_GAS,
     }
   );
   randomSeed = latestRandomSeed;
@@ -258,7 +259,7 @@ const getTroveInsertionHints = async (
     hintAddress,
     hintAddress,
     {
-      gasLimit: MAX_GAS, // permit max gas
+      gasLimit: MAX_GAS,
     }
   );
 

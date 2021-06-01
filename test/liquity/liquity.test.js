@@ -22,10 +22,9 @@ describe.only("Liquity", () => {
   const wallet = provider.getWallets()[0];
   let dsa = null;
   let liquity = null;
-  let debug = true;
 
   before(async () => {
-    liquity = await helpers.deployAndConnect(contracts, debug);
+    liquity = await helpers.deployAndConnect(contracts, true);
     expect(liquity.troveManager.address).to.exist;
     expect(liquity.borrowerOperations.address).to.exist;
     expect(liquity.stabilityPool.address).to.exist;
