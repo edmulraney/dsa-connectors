@@ -6,6 +6,7 @@ const TROVE_MANAGER_ABI = [
   "function redeemCollateral(uint _LUSDAmount, address _firstRedemptionHint, address _upperPartialRedemptionHint, address _lowerPartialRedemptionHint, uint _partialRedemptionHintNICR, uint _maxIterations, uint _maxFee) external returns (uint)",
   "function getNominalICR(address _borrower) external view returns (uint)",
   "function liquidate(address _borrower) external",
+  "function liquidateTroves(uint _n) external",
 ];
 
 const BORROWER_OPERATIONS_ADDRESS =
